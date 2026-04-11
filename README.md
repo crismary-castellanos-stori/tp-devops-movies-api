@@ -4,7 +4,7 @@ API REST en Go que consume la API de TMDB (The Movie Database) para búsqueda y 
 
 ## Requisitos
 
-- Go 1.21 o superior
+- Go 1.26.1 o superior
 - Cuenta en [TMDB](https://www.themoviedb.org/) para obtener una API Key
 
 ## Configuración
@@ -52,6 +52,35 @@ go build -o movies-api api/main.go
 ```
 
 El servidor iniciará en `http://localhost:8080` (o el puerto configurado en `PORT`).
+
+### Opción 3: Ejecutar con Docker
+
+Construir la imagen:
+
+```bash
+docker build -t movies-api:latest .
+```
+
+Ejecutar el contenedor usando el archivo `.env`:
+
+```bash
+docker run --rm -p 8080:8080 --env-file .env movies-api:latest
+```
+
+El servidor quedará disponible en `http://localhost:8080`.
+
+### Opción 4: Usar Makefile
+
+Comandos disponibles:
+
+```bash
+make help
+make test
+make run
+make build
+make docker-build
+make docker-run
+```
 
 ## Endpoints
 
