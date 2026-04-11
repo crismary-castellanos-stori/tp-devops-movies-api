@@ -98,6 +98,31 @@ Detenerla:
 docker compose down
 ```
 
+## CI/CD
+
+### CI
+
+El repositorio incluye un workflow de GitHub Actions que:
+
+- corre los tests
+- compila la aplicación
+- valida el build de la imagen Docker
+
+### Publicación a Docker Hub
+
+También se incluye un workflow para publicar la imagen Docker en Docker Hub cuando hay cambios en `main`.
+
+Para que funcione, en GitHub tenés que crear estos secrets del repositorio:
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+
+La imagen se publica como:
+
+```text
+<DOCKERHUB_USERNAME>/movies-api
+```
+
 ## Endpoints
 
 ### Health Check
