@@ -80,6 +80,22 @@ make run
 make build
 make docker-build
 make docker-run
+make compose-up
+make compose-down
+```
+
+### Opción 5: Ejecutar con Docker Compose
+
+Levantar la aplicación:
+
+```bash
+docker compose up --build
+```
+
+Detenerla:
+
+```bash
+docker compose down
 ```
 
 ## Endpoints

@@ -4,7 +4,7 @@ IMAGE_TAG := latest
 PORT ?= 8080
 GOCACHE := $(CURDIR)/.gocache
 
-.PHONY: help test run build docker-build docker-run clean
+.PHONY: help test run build docker-build docker-run compose-up compose-down clean
 
 help:
 	@echo "Available targets:"
@@ -13,6 +13,8 @@ help:
 	@echo "  make build        Build the local binary"
 	@echo "  make docker-build Build the Docker image"
 	@echo "  make docker-run   Run the Docker image using .env"
+	@echo "  make compose-up   Start the app with docker compose"
+	@echo "  make compose-down Stop the docker compose service"
 	@echo "  make clean        Remove generated artifacts"
 
 test:
@@ -29,6 +31,12 @@ docker-build:
 
 docker-run:
 	docker run --rm --name movies-api -p $(PORT):8080 --env-file .env $(IMAGE_NAME):$(IMAGE_TAG)
+
+compose-up:
+	docker compose up --build
+
+compose-down:
+	docker compose down
 
 clean:
 	rm -f $(APP_NAME)
