@@ -30,11 +30,16 @@ func (e *UpstreamError) Error() string {
 	return fmt.Sprintf("upstream service returned status %d: %s", e.StatusCode, e.Message)
 }
 
-type MovieService struct {
-	tmdbClient *client.TMDBClient
+type movieClient interface {
+	SearchMovies(ctx context.Context, title string) (*model.TMDBSearchResponse, error)
+	GetMovie(ctx context.Context, id string) (*model.TMDBMovieDetail, error)
 }
 
-func NewMovieService(tmdbClient *client.TMDBClient) *MovieService {
+type MovieService struct {
+	tmdbClient movieClient
+}
+
+func NewMovieService(tmdbClient movieClient) *MovieService {
 	return &MovieService{
 		tmdbClient: tmdbClient,
 	}
