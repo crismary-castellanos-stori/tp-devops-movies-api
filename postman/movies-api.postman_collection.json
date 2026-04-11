@@ -1,0 +1,218 @@
+{
+	"info": {
+		"_postman_id": "movies-api-collection",
+		"name": "Movies API",
+		"description": "Collection para probar la Movies API que consume TMDB",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						},
+						"description": "Verifica que la API está funcionando correctamente"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/health",
+									"host": ["{{baseUrl}}"],
+									"path": ["health"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"ok\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Movies",
+			"item": [
+				{
+					"name": "Search Movies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movies/search?title=batman",
+							"host": ["{{baseUrl}}"],
+							"path": ["movies", "search"],
+							"query": [
+								{
+									"key": "title",
+									"value": "batman",
+									"description": "Título de la película a buscar"
+								}
+							]
+						},
+						"description": "Busca películas por título usando la API de TMDB"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/movies/search?title=batman",
+									"host": ["{{baseUrl}}"],
+									"path": ["movies", "search"],
+									"query": [
+										{
+											"key": "title",
+											"value": "batman"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"results\": [\n        {\n            \"id\": 268,\n            \"title\": \"Batman\",\n            \"overview\": \"Batman must face his most ruthless nemesis...\",\n            \"release_date\": \"1989-06-23\",\n            \"poster_path\": \"/tDexQyu6FWltcd0VhEDK7uib42f.jpg\",\n            \"vote_average\": 7.2\n        }\n    ],\n    \"total\": 45\n}"
+						},
+						{
+							"name": "Bad Request - Missing Title",
+							"originalRequest": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/movies/search",
+									"host": ["{{baseUrl}}"],
+									"path": ["movies", "search"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"body": "{\n    \"error\": \"title query parameter is required\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Search Movies - The Matrix",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movies/search?title=matrix",
+							"host": ["{{baseUrl}}"],
+							"path": ["movies", "search"],
+							"query": [
+								{
+									"key": "title",
+									"value": "matrix",
+									"description": "Título de la película a buscar"
+								}
+							]
+						},
+						"description": "Ejemplo: Buscar películas de Matrix"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Movies - Missing Title",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movies/search",
+							"host": ["{{baseUrl}}"],
+							"path": ["movies", "search"]
+						},
+						"description": "Test de error: búsqueda sin parámetro title"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Movie by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movies/550",
+							"host": ["{{baseUrl}}"],
+							"path": ["movies", "550"]
+						},
+						"description": "Obtiene los detalles de una película por su ID (550 = Fight Club)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/movies/550",
+									"host": ["{{baseUrl}}"],
+									"path": ["movies", "550"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"id\": 550,\n    \"title\": \"Fight Club\",\n    \"overview\": \"A ticking-Loss time bomb of a movie...\",\n    \"release_date\": \"1999-10-15\",\n    \"poster_path\": \"/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg\",\n    \"vote_average\": 8.4\n}"
+						},
+						{
+							"name": "Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/movies/999999999",
+									"host": ["{{baseUrl}}"],
+									"path": ["movies", "999999999"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"body": "{\n    \"error\": \"movie not found\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Movie - The Dark Knight",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movies/155",
+							"host": ["{{baseUrl}}"],
+							"path": ["movies", "155"]
+						},
+						"description": "Obtiene los detalles de The Dark Knight (ID: 155)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Movie - Not Found",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movies/999999999",
+							"host": ["{{baseUrl}}"],
+							"path": ["movies", "999999999"]
+						},
+						"description": "Test de error: película que no existe"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
