@@ -34,6 +34,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Read the project version so the image can be published with a human-friendly tag.
+      - name: Read release version
+        id: version
+        run: echo "value=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
+
       # Generate consistent tags and labels for the published image.
       - name: Extract Docker metadata
         id: meta
@@ -42,7 +47,13 @@ jobs:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
-            type=sha
+            type=raw,value=${{ steps.version.outputs.value }}
+            type=sha,format=short,prefix=sha-
+
+      # Reuse the same short SHA tag for the Render deploy hook payload.
+      - name: Compute image tag for Render
+        id: image_tag
+        run: echo "sha_tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       # Publish a multi-architecture image so it can run on amd64 and arm64.
       - name: Build and push Docker image
@@ -54,3 +65,15 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      # Ask Render to redeploy the exact image version that was just published.
+      - name: Trigger Render deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          IMAGE_URL: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.sha_tag }}
+        run: |
+          curl --fail --silent --show-error \
+            --get \
+            --data-urlencode "imgURL=${IMAGE_URL}" \
+            "${RENDER_DEPLOY_HOOK_URL}"
