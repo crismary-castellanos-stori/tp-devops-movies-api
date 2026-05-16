@@ -123,13 +123,18 @@ La imagen se publica como:
 <DOCKERHUB_USERNAME>/movies-api
 ```
 
-El versionado de imágenes se define en el archivo `VERSION`. En cada publicación se generan estas tags:
+El workflow publica siempre estas tags:
 
 - `latest`
-- la versión declarada, por ejemplo `v0.1.0`
+- una versión semántica, por ejemplo `v0.2.0`
 - una tag única por commit, por ejemplo `sha-1a2b3c4`
 
-Cuando se quiera publicar una nueva versión funcional, alcanza con actualizar el archivo `VERSION` antes del merge a `main`.
+La versión semántica se calcula automáticamente en cada merge a `main`:
+
+- ramas o PRs `feat/...` incrementan `minor`
+- ramas o PRs `fix/...` incrementan `patch`
+
+El archivo `VERSION` solo se usa como versión base inicial si todavía no existe ninguna tag `v*` en el repositorio.
 
 ### Despliegue en Render
 

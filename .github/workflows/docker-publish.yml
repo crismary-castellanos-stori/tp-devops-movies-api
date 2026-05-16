@@ -15,10 +15,15 @@ jobs:
   # Build and publish the production image to Docker Hub.
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # Enable cross-platform emulation for multi-architecture builds.
       - name: Set up QEMU
@@ -35,10 +40,69 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Read the project version so the image can be published with a human-friendly tag.
-      - name: Read release version
+      # Determine the next semantic version from the merged change type.
+      - name: Compute release version
         id: version
-        run: echo "value=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          git fetch --tags --force
+
+          existing_tag="$(git tag --points-at "${GITHUB_SHA}" 'v*' | sort -V | tail -n1)"
+          if [ -n "${existing_tag}" ]; then
+            echo "value=${existing_tag}" >> "$GITHUB_OUTPUT"
+            echo "created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          base_version="$(git tag -l 'v*' --sort=-v:refname | head -n1)"
+          if [ -z "${base_version}" ]; then
+            base_version="$(tr -d '[:space:]' < VERSION)"
+          fi
+
+          major="${base_version#v}"
+          major="${major%%.*}"
+          remainder="${base_version#v${major}.}"
+          minor="${remainder%%.*}"
+          patch="${base_version##*.}"
+
+          pr_payload="$(curl --silent --show-error \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls")"
+
+          pr_branch="$(printf '%s' "${pr_payload}" | jq -r '.[0].head.ref // ""')"
+          pr_title="$(printf '%s' "${pr_payload}" | jq -r '.[0].title // ""')"
+          head_message="${GITHUB_EVENT_HEAD_COMMIT_MESSAGE:-}"
+
+          change_hint="$(printf '%s\n%s\n%s' "${pr_branch}" "${pr_title}" "${head_message}" | tr '[:upper:]' '[:lower:]')"
+
+          bump="patch"
+          if printf '%s' "${change_hint}" | grep -Eq '(^|[[:space:]])feat[/(: -]'; then
+            bump="minor"
+          elif printf '%s' "${change_hint}" | grep -Eq '(^|[[:space:]])fix[/(: -]'; then
+            bump="patch"
+          fi
+
+          if [ "${bump}" = "minor" ]; then
+            minor=$((minor + 1))
+            patch=0
+          else
+            patch=$((patch + 1))
+          fi
+
+          next_version="v${major}.${minor}.${patch}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "${next_version}" "${GITHUB_SHA}"
+          git push origin "${next_version}"
+
+          echo "value=${next_version}" >> "$GITHUB_OUTPUT"
+          echo "created=true" >> "$GITHUB_OUTPUT"
 
       # Generate consistent tags and labels for the published image.
       - name: Extract Docker metadata
