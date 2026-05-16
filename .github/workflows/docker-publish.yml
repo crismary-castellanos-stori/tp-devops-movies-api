@@ -9,6 +9,7 @@ on:
 
 env:
   IMAGE_NAME: movies-api
+  RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
 
 jobs:
   # Build and publish the production image to Docker Hub.
@@ -68,9 +69,8 @@ jobs:
 
       # Ask Render to redeploy the exact image version that was just published.
       - name: Trigger Render deploy
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
         env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
           IMAGE_URL: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.sha_tag }}
         run: |
           curl --fail --silent --show-error \
