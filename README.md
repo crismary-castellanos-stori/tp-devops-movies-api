@@ -145,6 +145,8 @@ Pasos manuales:
 6. Configurar las variables de entorno:
    - `TMDB_API_KEY`
    - `TMDB_BASE_URL`
+   - `METRICS_USERNAME`
+   - `METRICS_PASSWORD`
 
 Render provee automáticamente la variable `PORT`, y la aplicación ya está preparada para escuchar ese puerto.
 
@@ -170,6 +172,11 @@ Ese endpoint incluye métricas de runtime de Go y métricas HTTP de la aplicaci�
 - duración de requests
 - cantidad de requests en curso
 
+El endpoint `/metrics` está protegido con Basic Auth usando estas variables de entorno:
+
+- `METRICS_USERNAME`
+- `METRICS_PASSWORD`
+
 Pasos manuales para conectarlo con Grafana Cloud:
 
 1. Crear una cuenta en Grafana Cloud.
@@ -181,7 +188,8 @@ Pasos manuales para conectarlo con Grafana Cloud:
 https://movies-api-latest.onrender.com/metrics
 ```
 
-5. Probar la conexión y guardar el scrape job.
+6. Completar autenticación `Basic` con el mismo usuario y contraseña configurados en Render.
+7. Probar la conexión y guardar el scrape job.
 
 Grafana Cloud hará el scrape automáticamente cada 60 segundos.
 
