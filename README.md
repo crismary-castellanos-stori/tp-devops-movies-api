@@ -123,6 +123,100 @@ La imagen se publica como:
 <DOCKERHUB_USERNAME>/movies-api
 ```
 
+El versionado de imágenes se define en el archivo `VERSION`. En cada publicación se generan estas tags:
+
+- `latest`
+- la versión declarada, por ejemplo `v0.1.0`
+- una tag única por commit, por ejemplo `sha-1a2b3c4`
+
+Cuando se quiera publicar una nueva versión funcional, alcanza con actualizar el archivo `VERSION` antes del merge a `main`.
+
+### Despliegue en Render
+
+El despliegue se realiza con un Web Service de Render configurado con `Existing Image`.
+
+Pasos manuales:
+
+1. Crear una cuenta en Render.
+2. Crear un `Web Service`.
+3. Elegir `Existing Image` en lugar de conectar el repositorio.
+4. Usar como imagen inicial `docker.io/<DOCKERHUB_USERNAME>/movies-api:latest`.
+5. Seleccionar el plan deseado y crear el servicio.
+6. Configurar las variables de entorno:
+   - `TMDB_API_KEY`
+   - `TMDB_BASE_URL`
+
+Render provee automáticamente la variable `PORT`, y la aplicación ya está preparada para escuchar ese puerto.
+
+Después de crear el servicio:
+
+1. Ir a `Settings` del servicio.
+2. Copiar la URL del `Deploy Hook`.
+3. Guardar esa URL en GitHub como secret `RENDER_DEPLOY_HOOK_URL`.
+
+Una vez configurado, cada publicación de imagen sobre `main` dispara automáticamente el deploy en Render usando la misma etiqueta `sha-<commit>` que se publicó en Docker Hub.
+
+### Monitoreo con Grafana Cloud
+
+La API expone un endpoint Prometheus en:
+
+```text
+/metrics
+```
+
+Ese endpoint incluye métricas de runtime de Go y métricas HTTP de la aplicación:
+
+- total de requests por método, ruta y código de estado
+- duración de requests
+- cantidad de requests en curso
+
+Pasos manuales para conectarlo con Grafana Cloud:
+
+1. Crear una cuenta en Grafana Cloud.
+2. Ir a `Connections` > `Add new connection`.
+3. Buscar `Metrics Endpoint`.
+4. Crear un scrape job con la URL pública:
+
+```text
+https://movies-api-latest.onrender.com/metrics
+```
+
+5. Probar la conexión y guardar el scrape job.
+
+Grafana Cloud hará el scrape automáticamente cada 60 segundos.
+
+Consultas útiles para el dashboard:
+
+```promql
+sum by (route, status) (rate(movies_api_http_requests_total[5m]))
+```
+
+```promql
+histogram_quantile(0.95, sum by (le, route) (rate(movies_api_http_request_duration_seconds_bucket[5m])))
+```
+
+```promql
+movies_api_http_requests_in_flight
+```
+
+Para generar tráfico de prueba antes de la presentación:
+
+```bash
+make traffic
+```
+
+O directamente contra Render:
+
+```bash
+make traffic-render
+```
+
+Si querés sobrescribir la URL manualmente:
+
+```bash
+BASE_URL=https://movies-api-latest.onrender.com make traffic
+```
+
 ## Endpoints
 
 ### Health Check

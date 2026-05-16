@@ -12,6 +12,7 @@ import (
 	"github.com/crismary-castellanos-stori/tp-devops-movies-api/internal/client"
 	"github.com/crismary-castellanos-stori/tp-devops-movies-api/internal/config"
 	"github.com/crismary-castellanos-stori/tp-devops-movies-api/internal/handler"
+	"github.com/crismary-castellanos-stori/tp-devops-movies-api/internal/monitoring"
 	"github.com/crismary-castellanos-stori/tp-devops-movies-api/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -32,6 +33,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(monitoring.Middleware)
 
 	handler.RegisterRoutes(r, movieHandler)
 
