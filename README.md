@@ -123,13 +123,18 @@ La imagen se publica como:
 <DOCKERHUB_USERNAME>/movies-api
 ```
 
-El versionado de imágenes se define en el archivo `VERSION`. En cada publicación se generan estas tags:
+El workflow publica siempre estas tags:
 
 - `latest`
-- la versión declarada, por ejemplo `v0.1.0`
+- una versión semántica, por ejemplo `v0.2.0`
 - una tag única por commit, por ejemplo `sha-1a2b3c4`
 
-Cuando se quiera publicar una nueva versión funcional, alcanza con actualizar el archivo `VERSION` antes del merge a `main`.
+La versión semántica se calcula automáticamente en cada merge a `main`:
+
+- ramas o PRs `feat/...` incrementan `minor`
+- ramas o PRs `fix/...` incrementan `patch`
+
+El archivo `VERSION` solo se usa como versión base inicial si todavía no existe ninguna tag `v*` en el repositorio.
 
 ### Despliegue en Render
 
@@ -145,6 +150,8 @@ Pasos manuales:
 6. Configurar las variables de entorno:
    - `TMDB_API_KEY`
    - `TMDB_BASE_URL`
+   - `METRICS_USERNAME`
+   - `METRICS_PASSWORD`
 
 Render provee automáticamente la variable `PORT`, y la aplicación ya está preparada para escuchar ese puerto.
 
@@ -170,6 +177,11 @@ Ese endpoint incluye métricas de runtime de Go y métricas HTTP de la aplicaci�
 - duración de requests
 - cantidad de requests en curso
 
+El endpoint `/metrics` está protegido con Basic Auth usando estas variables de entorno:
+
+- `METRICS_USERNAME`
+- `METRICS_PASSWORD`
+
 Pasos manuales para conectarlo con Grafana Cloud:
 
 1. Crear una cuenta en Grafana Cloud.
@@ -181,7 +193,8 @@ Pasos manuales para conectarlo con Grafana Cloud:
 https://movies-api-latest.onrender.com/metrics
 ```
 
-5. Probar la conexión y guardar el scrape job.
+6. Completar autenticación `Basic` con el mismo usuario y contraseña configurados en Render.
+7. Probar la conexión y guardar el scrape job.
 
 Grafana Cloud hará el scrape automáticamente cada 60 segundos.
 
