@@ -193,8 +193,8 @@ Pasos manuales para conectarlo con Grafana Cloud:
 https://movies-api-latest.onrender.com/metrics
 ```
 
-6. Completar autenticación `Basic` con el mismo usuario y contraseña configurados en Render.
-7. Probar la conexión y guardar el scrape job.
+5. Completar autenticación `Basic` con el mismo usuario y contraseña configurados en Render.
+6. Probar la conexión y guardar el scrape job.
 
 Grafana Cloud hará el scrape automáticamente cada 60 segundos.
 
